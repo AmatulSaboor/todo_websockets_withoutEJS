@@ -1,19 +1,9 @@
 const socket = io('ws://localhost:3000');
-
-// ================================= socket events and event listeners ================================
 socket.on('connect', () =>
 {
     socket.send('Hello server');
 });
 
-// socket.on("addResponse", data => {
-//     console.log("inside add response listener");
-//     for (let todo of data)
-//     {
-//         console.log("inside loop");
-//         $("#todoRow").append(`<tr><td>${todo.id}</td><td><input type ="checkbox" ${todo.isChecked}/></td><td>${todo.name}</td></tr>`);
-//     }
-// });
 socket.on('render', data =>
     {
         console.log(data);
@@ -22,9 +12,7 @@ socket.on('render', data =>
     }
 );
 
-// ===================================== js functions =================================================
-
-// add
+// add button click
 $("#addBtn").click( () => {
     console.log('inside add');
     const todo = {};
@@ -33,31 +21,39 @@ $("#addBtn").click( () => {
     socket.emit("add", todo);
 });
 
-// delete
-$("#deleteIcon").on('click', (e) => {
-    console.log('inside delete');
-    const todoId = e;
-    console.log(e);
-    socket.emit("delete", {todoId});
-});
-
-// toggle checked
+/**
+ * it toggles the checkbox
+ * @param {number} id 
+ * @param {boolean} isChecked 
+ */
 function toggleChecked(id, isChecked){
     console.log(id, isChecked);
+    socket.emit('toggleTodo', {id, isChecked});
 }
+
 /**
- * 
- * @param {*} data 
+ * it deletes the selected todo
+ * @param {number} id 
+ */
+ function deleteTodo(id){
+    console.log('inside delete');
+    socket.emit('deleteTodo', id);
+}
+
+/**
+ * it shows all the rows afte getting data from server
+ * @param {object} data 
  */
 function showTodosRows(todos){
     console.log(`inside showTodoRows`);
     const todosTable = $("#todosTable");
+    todosTable.html('');
     for (todo of todos){
         todosTable.append(`
             <tr>
-                <td><input type = "checkbox" ${todo.isChecked?'checked':''} onchange='toggleChecked(${todo.isChecked}, ${todo._id})'/></td>
+                <td><input type = "checkbox" ${todo.isChecked?'checked':''} onchange='toggleChecked("${todo._id}", ${todo.isChecked})'/></td>
                 <td>${todo.name}</td>
-                <td><a id="deleteIcon" class="delete"><i class="material-icons" title="">X</i></a></td>
+                <td><button class = "deleteBtn" type = "submit" class="btn btn-danger" onclick='deleteTodo("${todo._id}")'><i class="material-icons">X</i></button></td>
             </tr>
         `);
     }
